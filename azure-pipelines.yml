@@ -35,7 +35,7 @@ stages:
     - task: CmdLine@2
       displayName: Save the Docker image to a file
       inputs:
-        script: 'docker save $(imageRepository):latest -o image.tar'
+        script: 'docker save acrtetris.azurecr.io/tetrisgamewebapp:latest -o image.tar'
 
     - task: PublishBuildArtifacts@1
       displayName: Publish the Docker image file as a build artifact
