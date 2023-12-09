@@ -5,20 +5,20 @@ resources:
 - repo: self
 
 variables:
-  # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: 'ee29ed19-fd39-4f25-8489-0aacfa477c62'
-  imageRepository: 'tetrisgamewebapp'
-  containerRegistry: 'acrtetris.azurecr.io'
-  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
+ # Container registry service connection established during pipeline creation
+ dockerRegistryServiceConnection: 'ee29ed19-fd39-4f25-8489-0aacfa477c62'
+ imageRepository: 'tetrisgamewebapp'
+ containerRegistry: 'acrtetris.azurecr.io'
+ dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
 
-  # Agent VM image name
-  vmImageName: 'ubuntu-latest'
+ # Agent VM image name
+ vmImageName: 'ubuntu-latest'
 
 stages:
 - stage: Build
-  displayName: Build and push stage
-  jobs:
-  - job: Build
+ displayName: Build and push stage
+ jobs:
+ - job: Build
     displayName: Build
     pool:
       vmImage: $(vmImageName)
@@ -32,8 +32,13 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: latest
 
-    - task: PublishBuildArtifacts@1
-      displayName: Publish Docker image as an artifact
+    - task: CmdLine@2
+      displayName: Save the Docker image to a file
       inputs:
-        pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        script: 'docker save $(imageRepository):latest -o image.tar'
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish the Docker image file as a build artifact
+      inputs:
+        pathtoPublish: 'image.tar'
         artifactName: 'DockerImage'
