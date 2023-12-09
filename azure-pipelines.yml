@@ -5,15 +5,14 @@ resources:
 - repo: self
 
 variables:
- dockerRegistryServiceConnection: 'ee29ed19-fd39-4f25-8489-0aacfa477c62'
- imageRepository: 'tetrisgamewebapp'
- containerRegistry: 'acrtetris.azurecr.io'
- dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
- vmImageName: 'ubuntu-latest'
- buildConfiguration: 'Release'
- solution: '**/*.sln'
- artifactName: 'TetrisGameWebApp'
- artifactsPath: '$(Build.ArtifactStagingDirectory)/$(artifactName)'
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: 'ee29ed19-fd39-4f25-8489-0aacfa477c62'
+  imageRepository: 'tetrisgamewebapp'
+  containerRegistry: 'acrtetris.azurecr.io'
+  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
+
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
 
 stages:
 - stage: Build
@@ -24,22 +23,6 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
-    - task: NuGetToolInstaller@1
-      displayName: 'Install NuGet'
-
-    - task: NuGetCommand@2
-      displayName: 'NuGet restore'
-      inputs:
-        restoreSolution: '$(solution)'
-
-    - task: VSBuild@1
-      displayName: 'Build solution'
-      inputs:
-        solution: '$(solution)'
-        msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
-        platform: '$(BuildPlatform)'
-        configuration: '$(buildConfiguration)'
-
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
@@ -50,7 +33,7 @@ stages:
         tags: latest
 
     - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact'
+      displayName: Publish Docker image as an artifact
       inputs:
-        pathtoPublish: '$(artifactsPath)'
-        artifactName: '$(artifactName)'
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: 'DockerImage'
